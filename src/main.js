@@ -2,15 +2,13 @@ import data from "../data.json";
 
 let filters = [];
 
-function filteredItems() {
-  return data.reduce((acc, cur) => {
+function filteredItems(filter, list) {
+  return list.reduce((acc, cur) => {
     const tags = [cur.role, cur.level, ...cur.languages, ...cur.tools];
-    for (const filter of filters) {
-      if (tags.includes(filter)) {
-        return [...acc, cur];
-      }
-      return acc;
+    if (tags.includes(filter)) {
+      return [...acc, cur];
     }
+    return acc;
   }, []);
 }
 
@@ -21,14 +19,30 @@ function addFilter(filter) {
 
   filters = [...filters, filter];
   renderFilters();
-  renderjobList(filteredItems());
+
+  let list = [...data];
+  for (const filter of filters) {
+    list = filteredItems(filter, list);
+  }
+
+  renderjobList(list);
 }
 
 function removeFilter(filter) {
-  filters = filters.map((f) => f !== filter);
+  filters = filters.filter((f) => f !== filter);
   renderFilters();
-  renderjobList(filteredItems());
+
+  let list = [...data];
+  for (const filter of filters) {
+    list = filteredItems(filter, list);
+  }
+
+  renderjobList(list);
 }
+
+const clearBtn = document.getElementById("clear");
+
+clearBtn.onclick = clearFilters;
 
 function clearFilters() {
   filters = [];
@@ -69,6 +83,10 @@ function renderFilters() {
     icon.alt = "";
 
     removeButton.append(icon);
+
+    removeButton.onclick = function () {
+      removeFilter(filter);
+    };
 
     li.append(span, removeButton);
     ul.append(li);
